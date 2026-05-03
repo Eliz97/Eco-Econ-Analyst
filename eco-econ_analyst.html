@@ -1,0 +1,1402 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Eco-Econ Analyst</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link
+      href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,700;1,9..144,400&display=swap"
+      rel="stylesheet"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+
+    <style>
+      /* ══════════════════════════════════════
+       CSS3 CUSTOM PROPERTIES
+    ══════════════════════════════════════ */
+      :root {
+        --bg: #08100d;
+        --surface: #0e1a16;
+        --surface2: #132019;
+        --border: #1c2e28;
+        --border2: #243d35;
+        --green: #3dffa0;
+        --green-soft: rgba(61, 255, 160, 0.1);
+        --green-glow: rgba(61, 255, 160, 0.22);
+        --amber: #ffc844;
+        --amber-soft: rgba(255, 200, 68, 0.1);
+        --red: #ff6060;
+        --red-soft: rgba(255, 96, 96, 0.1);
+        --text: #cce8dc;
+        --text-dim: #7aaa94;
+        --text-muted: #3d6655;
+        --mono: "DM Mono", monospace;
+        --serif: "Fraunces", serif;
+        --radius: 10px;
+      }
+
+      /* ══════════════════════════════════════
+       CSS3 RESET
+    ══════════════════════════════════════ */
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+      }
+
+      html {
+        scroll-behavior: smooth;
+      }
+
+      body {
+        background-color: var(--bg);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 13px;
+        line-height: 1.6;
+        min-height: 100vh;
+        overflow-x: hidden;
+      }
+
+      /* CSS3 grid texture overlay */
+      body::before {
+        content: "";
+        position: fixed;
+        inset: 0;
+        background-image:
+          linear-gradient(rgba(61, 255, 160, 0.018) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(61, 255, 160, 0.018) 1px, transparent 1px);
+        background-size: 44px 44px;
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* Ambient radial glow */
+      body::after {
+        content: "";
+        position: fixed;
+        top: -20%;
+        left: -10%;
+        width: 60%;
+        height: 60%;
+        background: radial-gradient(
+          ellipse at center,
+          rgba(61, 255, 160, 0.04) 0%,
+          transparent 70%
+        );
+        pointer-events: none;
+        z-index: 0;
+      }
+
+      /* ══════════════════════════════════════
+       CSS3 KEYFRAME ANIMATIONS
+    ══════════════════════════════════════ */
+      @keyframes fadeUp {
+        from {
+          opacity: 0;
+          transform: translateY(18px);
+        }
+        to {
+          opacity: 1;
+          transform: translateY(0);
+        }
+      }
+
+      @keyframes scan {
+        from {
+          transform: translateY(-100%);
+        }
+        to {
+          transform: translateY(400%);
+        }
+      }
+
+      @keyframes blink {
+        0%,
+        100% {
+          opacity: 1;
+        }
+        50% {
+          opacity: 0;
+        }
+      }
+
+      /* ══════════════════════════════════════
+       LAYOUT WRAPPER
+    ══════════════════════════════════════ */
+      .app {
+        position: relative;
+        z-index: 1;
+        max-width: 1300px;
+        margin: 0 auto;
+        padding: 0 28px 80px;
+        animation: fadeUp 0.55s ease both;
+      }
+
+      /* ══════════════════════════════════════
+       HEADER — HTML5 <header>
+    ══════════════════════════════════════ */
+      header {
+        padding: 44px 0 30px;
+        border-bottom: 1px solid var(--border);
+        display: flex;
+        align-items: flex-end;
+        justify-content: space-between;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .brand {
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+      }
+
+      .brand-tag {
+        font-size: 10px;
+        letter-spacing: 0.22em;
+        text-transform: uppercase;
+        color: var(--green);
+        opacity: 0.75;
+      }
+
+      h1 {
+        font-family: var(--serif);
+        font-size: clamp(30px, 4.5vw, 54px);
+        font-weight: 700;
+        letter-spacing: -0.025em;
+        line-height: 1;
+        color: var(--text);
+      }
+
+      h1 em {
+        font-style: italic;
+        font-weight: 300;
+        color: var(--green);
+      }
+
+      .header-desc {
+        font-size: 11px;
+        color: var(--text-muted);
+        letter-spacing: 0.04em;
+        line-height: 1.8;
+        max-width: 300px;
+        text-align: right;
+      }
+
+      .header-desc span {
+        display: inline-block;
+        background: var(--green-soft);
+        color: var(--green);
+        border-radius: 3px;
+        padding: 1px 6px;
+        font-size: 10px;
+      }
+
+      /* ══════════════════════════════════════
+       MAIN GRID — CSS3 GRID
+    ══════════════════════════════════════ */
+      .main-grid {
+        display: grid;
+        grid-template-columns: 360px 1fr;
+        grid-template-rows: auto 1fr;
+        gap: 0;
+      }
+
+      /* ══════════════════════════════════════
+       INPUT PANEL — HTML5 <section>
+    ══════════════════════════════════════ */
+      .input-panel {
+        grid-row: 1 / 3;
+        border-right: 1px solid var(--border);
+        padding: 32px 28px 32px 0;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .panel-label {
+        font-size: 9px;
+        letter-spacing: 0.28em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 20px;
+        padding-bottom: 12px;
+        border-bottom: 1px solid var(--border);
+      }
+
+      .section-head {
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--green);
+        opacity: 0.65;
+        margin-top: 20px;
+        margin-bottom: 12px;
+      }
+
+      /* ── Form Fields ── */
+      .field {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+        margin-bottom: 13px;
+        animation: fadeUp 0.5s ease both;
+      }
+
+      label {
+        font-size: 10px;
+        letter-spacing: 0.07em;
+        color: var(--text-dim);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+      }
+
+      label .unit {
+        font-style: italic;
+        color: var(--text-muted);
+        font-size: 9px;
+      }
+
+      /* CSS3 styled number inputs */
+      input[type="number"] {
+        width: 100%;
+        background: var(--surface);
+        border: 1px solid var(--border2);
+        border-radius: var(--radius);
+        color: var(--text);
+        font-family: var(--mono);
+        font-size: 13px;
+        padding: 10px 14px;
+        outline: none;
+        transition:
+          border-color 0.2s ease,
+          box-shadow 0.2s ease,
+          background-color 0.2s ease;
+        moz-appearance: textfield;
+      }
+
+      input[type="number"]::-webkit-inner-spin-button,
+      input[type="number"]::-webkit-outer-spin-button {
+        -webkit-appearance: none;
+      }
+
+      input[type="number"]:focus {
+        border-color: var(--green);
+        box-shadow: 0 0 0 3px var(--green-soft);
+        background: var(--surface2);
+      }
+
+      input[type="number"].warn {
+        border-color: var(--amber);
+        box-shadow: 0 0 0 3px var(--amber-soft);
+      }
+
+      input[type="number"].error {
+        border-color: var(--red);
+        box-shadow: 0 0 0 3px var(--red-soft);
+      }
+
+      .field-msg {
+        font-size: 10px;
+        color: var(--amber);
+        display: none;
+        padding-left: 4px;
+      }
+
+      .field-msg.error {
+        color: var(--red);
+      }
+      .field-msg.visible {
+        display: block;
+      }
+
+      /* ── Range Sliders ── */
+      .slider-wrap {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+      }
+
+      input[type="range"] {
+        -webkit-appearance: none;
+        flex: 1;
+        height: 3px;
+        background: var(--border2);
+        border-radius: 2px;
+        outline: none;
+        cursor: pointer;
+        transition: background-color 0.2s;
+      }
+
+      input[type="range"]::-webkit-slider-thumb {
+        -webkit-appearance: none;
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--green);
+        box-shadow: 0 0 8px var(--green-glow);
+        cursor: pointer;
+        transition: transform 0.15s ease;
+      }
+
+      input[type="range"]::-webkit-slider-thumb:hover {
+        transform: scale(1.3);
+      }
+
+      input[type="range"]::-moz-range-thumb {
+        width: 14px;
+        height: 14px;
+        border-radius: 50%;
+        background: var(--green);
+        border: none;
+        cursor: pointer;
+      }
+
+      .range-val {
+        font-size: 11px;
+        color: var(--green);
+        width: 42px;
+        text-align: right;
+      }
+
+      /* ── Run Button ── */
+      .btn-analyze {
+        width: 100%;
+        margin-top: 22px;
+        padding: 14px 0;
+        background: transparent;
+        border: 1px solid var(--green);
+        border-radius: var(--radius);
+        color: var(--green);
+        font-family: var(--mono);
+        font-size: 12px;
+        letter-spacing: 0.18em;
+        text-transform: uppercase;
+        cursor: pointer;
+        position: relative;
+        overflow: hidden;
+        transition:
+          background-color 0.25s ease,
+          box-shadow 0.25s ease;
+      }
+
+      .btn-analyze::before {
+        content: "";
+        position: absolute;
+        top: -50%;
+        left: -50%;
+        width: 200%;
+        height: 200%;
+        background: linear-gradient(
+          to bottom,
+          transparent 45%,
+          rgba(61, 255, 160, 0.08) 50%,
+          transparent 55%
+        );
+        animation: scan 3s linear infinite;
+      }
+
+      .btn-analyze:hover {
+        background: var(--green-soft);
+        box-shadow: 0 0 20px var(--green-glow);
+      }
+
+      .btn-analyze:active {
+        transform: scale(0.98);
+      }
+
+      /* ══════════════════════════════════════
+       KPI CARDS — CSS3 FLEXBOX
+    ══════════════════════════════════════ */
+      .kpi-row {
+        display: flex;
+        gap: 0;
+        border-bottom: 1px solid var(--border);
+        padding: 26px 0 26px 28px;
+        flex-wrap: wrap;
+      }
+
+      .kpi-card {
+        flex: 1;
+        min-width: 140px;
+        padding: 0 24px;
+        border-right: 1px solid var(--border);
+        animation: fadeUp 0.5s ease both;
+      }
+
+      .kpi-card:first-child {
+        padding-left: 0;
+      }
+      .kpi-card:last-child {
+        border-right: none;
+      }
+
+      .kpi-card:nth-child(1) {
+        animation-delay: 0.08s;
+      }
+      .kpi-card:nth-child(2) {
+        animation-delay: 0.16s;
+      }
+      .kpi-card:nth-child(3) {
+        animation-delay: 0.24s;
+      }
+      .kpi-card:nth-child(4) {
+        animation-delay: 0.32s;
+      }
+
+      .kpi-label {
+        font-size: 9px;
+        letter-spacing: 0.2em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 8px;
+      }
+
+      .kpi-value {
+        font-family: var(--serif);
+        font-size: clamp(22px, 2.8vw, 36px);
+        font-weight: 700;
+        line-height: 1;
+        letter-spacing: -0.02em;
+        color: var(--text);
+        transition: color 0.4s ease;
+      }
+
+      .kpi-value.positive {
+        color: var(--green);
+      }
+      .kpi-value.negative {
+        color: var(--red);
+      }
+
+      .kpi-sub {
+        font-size: 10px;
+        color: var(--text-muted);
+        margin-top: 5px;
+      }
+
+      /* Verdict badge */
+      .verdict-badge {
+        display: inline-flex;
+        align-items: center;
+        gap: 7px;
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 10px;
+        letter-spacing: 0.12em;
+        text-transform: uppercase;
+        font-weight: 500;
+        margin-top: 6px;
+        transition: all 0.4s ease;
+      }
+
+      .verdict-badge.feasible {
+        background: var(--green-soft);
+        color: var(--green);
+        border: 1px solid rgba(61, 255, 160, 0.3);
+      }
+
+      .verdict-badge.marginal {
+        background: var(--amber-soft);
+        color: var(--amber);
+        border: 1px solid rgba(255, 200, 68, 0.3);
+      }
+
+      .verdict-badge.not-recommended {
+        background: var(--red-soft);
+        color: var(--red);
+        border: 1px solid rgba(255, 96, 96, 0.3);
+      }
+
+      .verdict-dot {
+        width: 6px;
+        height: 6px;
+        border-radius: 50%;
+        animation: blink 1.4s ease infinite;
+      }
+
+      .feasible .verdict-dot {
+        background: var(--green);
+      }
+      .marginal .verdict-dot {
+        background: var(--amber);
+      }
+      .not-recommended .verdict-dot {
+        background: var(--red);
+      }
+
+      /* ══════════════════════════════════════
+       CHART AREA
+    ══════════════════════════════════════ */
+      .chart-area {
+        padding: 28px 0 0 28px;
+        display: flex;
+        flex-direction: column;
+        gap: 18px;
+      }
+
+      .chart-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      h2.chart-title {
+        font-family: var(--serif);
+        font-size: 18px;
+        font-weight: 300;
+        font-style: italic;
+        color: var(--text);
+        letter-spacing: -0.01em;
+      }
+
+      .chart-legend {
+        display: flex;
+        gap: 20px;
+        flex-wrap: wrap;
+      }
+
+      .legend-item {
+        display: flex;
+        align-items: center;
+        gap: 7px;
+        font-size: 10px;
+        color: var(--text-dim);
+        letter-spacing: 0.06em;
+      }
+
+      .legend-line {
+        width: 22px;
+        height: 2px;
+        border-radius: 2px;
+      }
+
+      .legend-line.dashed {
+        background: repeating-linear-gradient(
+          90deg,
+          var(--amber) 0,
+          var(--amber) 5px,
+          transparent 5px,
+          transparent 9px
+        );
+      }
+
+      .chart-box {
+        position: relative;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+        padding: 20px;
+        height: 340px;
+      }
+
+      .empty-state {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        height: 100%;
+        gap: 10px;
+        color: var(--text-muted);
+        font-size: 11px;
+        letter-spacing: 0.08em;
+      }
+
+      .empty-icon {
+        font-size: 28px;
+        opacity: 0.35;
+      }
+
+      .breakeven-label {
+        position: absolute;
+        top: 14px;
+        right: 16px;
+        background: var(--surface2);
+        border: 1px solid var(--border2);
+        border-radius: 6px;
+        padding: 5px 12px;
+        font-size: 10px;
+        color: var(--text-dim);
+        letter-spacing: 0.06em;
+        display: none;
+      }
+
+      .breakeven-label strong {
+        color: var(--amber);
+        font-weight: 500;
+      }
+
+      /* ══════════════════════════════════════
+       DATA TABLE — HTML5 <table>
+    ══════════════════════════════════════ */
+      .table-section {
+        grid-column: 1 / -1;
+        padding: 32px 0 0;
+        border-top: 1px solid var(--border);
+        margin-top: 28px;
+      }
+
+      .table-label {
+        font-size: 9px;
+        letter-spacing: 0.25em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        margin-bottom: 14px;
+      }
+
+      .table-scroll {
+        overflow-x: auto;
+        border: 1px solid var(--border);
+        border-radius: var(--radius);
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        font-size: 11px;
+      }
+
+      thead tr {
+        background: var(--surface2);
+        border-bottom: 1px solid var(--border2);
+      }
+
+      th {
+        padding: 10px 16px;
+        text-align: right;
+        font-size: 9px;
+        letter-spacing: 0.16em;
+        text-transform: uppercase;
+        color: var(--text-muted);
+        white-space: nowrap;
+        font-weight: 400;
+      }
+
+      th:first-child {
+        text-align: center;
+      }
+
+      tbody tr {
+        border-bottom: 1px solid var(--border);
+        transition: background-color 0.15s ease;
+      }
+
+      tbody tr:hover {
+        background: var(--surface);
+      }
+      tbody tr:last-child {
+        border-bottom: none;
+      }
+
+      td {
+        padding: 9px 16px;
+        text-align: right;
+        color: var(--text-dim);
+        white-space: nowrap;
+      }
+
+      td:first-child {
+        text-align: center;
+        color: var(--text-muted);
+        font-size: 10px;
+      }
+
+      td.pos {
+        color: var(--green);
+      }
+      td.neg {
+        color: var(--red);
+      }
+
+      .be-row td {
+        background: rgba(255, 200, 68, 0.05);
+      }
+      .be-row td:first-child {
+        color: var(--amber);
+      }
+
+      /* ══════════════════════════════════════
+       FOOTER — HTML5 <footer>
+    ══════════════════════════════════════ */
+      footer {
+        margin-top: 48px;
+        padding-top: 20px;
+        border-top: 1px solid var(--border);
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        flex-wrap: wrap;
+        gap: 12px;
+      }
+
+      .footer-text {
+        font-size: 10px;
+        color: var(--text-muted);
+        letter-spacing: 0.06em;
+      }
+
+      .footer-formula {
+        font-size: 10px;
+        color: var(--text-muted);
+        font-style: italic;
+      }
+
+      .footer-formula span {
+        color: var(--green);
+        opacity: 0.6;
+      }
+
+      /* ══════════════════════════════════════
+       CSS3 RESPONSIVE MEDIA QUERIES
+    ══════════════════════════════════════ */
+      @media (max-width: 900px) {
+        .main-grid {
+          grid-template-columns: 1fr;
+        }
+
+        .input-panel {
+          grid-row: auto;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+          padding: 28px 0;
+        }
+
+        .kpi-row {
+          padding: 20px 0;
+        }
+        .chart-area {
+          padding: 24px 0 0;
+        }
+        .header-desc {
+          text-align: left;
+        }
+      }
+
+      @media (max-width: 560px) {
+        .app {
+          padding: 0 16px 60px;
+        }
+
+        .kpi-card {
+          flex: 1 1 45%;
+          border-right: none;
+          border-bottom: 1px solid var(--border);
+          padding: 12px 0;
+        }
+
+        .chart-box {
+          height: 260px;
+        }
+        header {
+          padding: 28px 0 20px;
+        }
+      }
+    </style>
+  </head>
+
+  <body>
+    <div class="app">
+      <!-- ══ HTML5 HEADER ══ -->
+      <header>
+        <div class="brand">
+          <span class="brand-tag">Life Cycle Cost Analysis</span>
+          <h1>Eco-<em>Econ</em> Analyst</h1>
+        </div>
+        <p class="header-desc">
+          Real-world green energy ROI.<br />
+          Accounts for <span>degradation</span>, <span>inflation</span> &amp;
+          time-value of money.
+        </p>
+      </header>
+
+      <!-- ══ HTML5 MAIN ══ -->
+      <main class="main-grid">
+        <!-- ── INPUT PANEL ── -->
+        <section class="input-panel" aria-label="Project Parameters">
+          <p class="panel-label">// Project Parameters</p>
+
+          <p class="section-head">01 — Financial</p>
+
+          <div class="field">
+            <label for="initialCost"
+              >Initial Investment <span class="unit">USD $</span></label
+            >
+            <input
+              type="number"
+              id="initialCost"
+              value="10000"
+              min="0"
+              step="500"
+            />
+            <span class="field-msg" id="initialCost-msg"></span>
+          </div>
+
+          <div class="field">
+            <label for="annualSavings"
+              >Annual Energy Savings <span class="unit">USD $</span></label
+            >
+            <input
+              type="number"
+              id="annualSavings"
+              value="1800"
+              min="0"
+              step="100"
+            />
+            <span class="field-msg" id="annualSavings-msg"></span>
+          </div>
+
+          <div class="field">
+            <label for="maintenanceCost"
+              >Annual Maintenance Cost <span class="unit">USD $</span></label
+            >
+            <input
+              type="number"
+              id="maintenanceCost"
+              value="150"
+              min="0"
+              step="50"
+            />
+          </div>
+
+          <p class="section-head">02 — Rates</p>
+
+          <div class="field">
+            <label for="discountRate"
+              >Discount Rate (WACC) <span class="unit">%</span></label
+            >
+            <div class="slider-wrap">
+              <input
+                type="range"
+                id="discountRate"
+                min="0"
+                max="20"
+                step="0.5"
+                value="7"
+                oninput="syncRange(this, 'discountRateVal')"
+              />
+              <span class="range-val" id="discountRateVal">7.0%</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="utilityInflation"
+              >Utility Inflation Rate <span class="unit">%</span></label
+            >
+            <div class="slider-wrap">
+              <input
+                type="range"
+                id="utilityInflation"
+                min="0"
+                max="15"
+                step="0.5"
+                value="4"
+                oninput="syncRange(this, 'utilityInflationVal')"
+              />
+              <span class="range-val" id="utilityInflationVal">4.0%</span>
+            </div>
+          </div>
+
+          <div class="field">
+            <label for="degradationRate"
+              >Efficiency Degradation <span class="unit">%/yr</span></label
+            >
+            <div class="slider-wrap">
+              <input
+                type="range"
+                id="degradationRate"
+                min="0"
+                max="5"
+                step="0.1"
+                value="0.7"
+                oninput="syncRange(this, 'degradationRateVal')"
+              />
+              <span class="range-val" id="degradationRateVal">0.7%</span>
+            </div>
+          </div>
+
+          <p class="section-head">03 — Carbon Offset</p>
+
+          <div class="field">
+            <label for="carbonIntensity"
+              >Grid Carbon Intensity <span class="unit">kg CO₂/kWh</span></label
+            >
+            <input
+              type="number"
+              id="carbonIntensity"
+              value="0.45"
+              min="0"
+              max="2"
+              step="0.01"
+            />
+            <span class="field-msg" id="carbonIntensity-msg"></span>
+          </div>
+
+          <div class="field">
+            <label for="energyRate"
+              >Electricity Tariff <span class="unit">$/kWh</span></label
+            >
+            <input
+              type="number"
+              id="energyRate"
+              value="0.12"
+              min="0.01"
+              max="2"
+              step="0.01"
+            />
+          </div>
+
+          <button class="btn-analyze" onclick="runAnalysis()">
+            ▶&nbsp;&nbsp;Run Analysis
+          </button>
+        </section>
+
+        <!-- ── KPI CARDS ── -->
+        <section class="kpi-row" aria-label="Key Performance Indicators">
+          <article class="kpi-card">
+            <p class="kpi-label">20-yr Net NPV</p>
+            <p class="kpi-value" id="kpiNPV">—</p>
+            <p class="kpi-sub">Present-value profit</p>
+          </article>
+          <article class="kpi-card">
+            <p class="kpi-label">Break-even Year</p>
+            <p class="kpi-value" id="kpiPayback">—</p>
+            <p class="kpi-sub">Discounted payback</p>
+          </article>
+          <article class="kpi-card">
+            <p class="kpi-label">CO₂ Offset</p>
+            <p class="kpi-value" id="kpiCarbon">—</p>
+            <p class="kpi-sub">Total tonnes avoided</p>
+          </article>
+          <article class="kpi-card">
+            <p class="kpi-label">Project Verdict</p>
+            <div id="kpiVerdict"><p class="kpi-value">—</p></div>
+            <p class="kpi-sub">Based on 20-yr ROI</p>
+          </article>
+        </section>
+
+        <!-- ── CHART ── -->
+        <section class="chart-area" aria-label="NPV & Carbon Chart">
+          <div class="chart-header">
+            <h2 class="chart-title">
+              Cumulative NPV &amp; Carbon Offset — 20-Year Horizon
+            </h2>
+            <div class="chart-legend">
+              <div class="legend-item">
+                <div class="legend-line" style="background: var(--green)"></div>
+                Cumulative NPV ($)
+              </div>
+              <div class="legend-item">
+                <div class="legend-line dashed"></div>
+                CO₂ Offset (kg) →
+              </div>
+            </div>
+          </div>
+          <div class="chart-box">
+            <div class="empty-state" id="chartEmpty">
+              <div class="empty-icon">◈</div>
+              <span>Enter parameters &amp; click Run Analysis</span>
+            </div>
+            <canvas id="myChart" style="display: none"></canvas>
+            <div class="breakeven-label" id="breakevenLabel">
+              Break-even: <strong id="breakevenAnnot">—</strong>
+            </div>
+          </div>
+        </section>
+
+        <!-- ── DATA TABLE ── -->
+        <section class="table-section" aria-label="Annual Breakdown">
+          <p class="table-label">// Annual Cash-Flow Breakdown</p>
+          <div class="table-scroll">
+            <table>
+              <thead>
+                <tr>
+                  <th>Year</th>
+                  <th>Gross Savings ($)</th>
+                  <th>Maintenance ($)</th>
+                  <th>Net Cash Flow ($)</th>
+                  <th>Discounted CF ($)</th>
+                  <th>Cumulative NPV ($)</th>
+                  <th>CO₂ Offset (kg)</th>
+                  <th>Cumul. CO₂ (t)</th>
+                </tr>
+              </thead>
+              <tbody id="tableBody">
+                <tr>
+                  <td
+                    colspan="8"
+                    style="
+                      text-align: center;
+                      color: var(--text-muted);
+                      padding: 24px;
+                    "
+                  >
+                    — Run analysis to populate —
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </section>
+      </main>
+
+      <!-- ══ HTML5 FOOTER ══ -->
+      <footer>
+        <p class="footer-text">
+          Eco-Econ Analyst &nbsp;|&nbsp; LCCA Engine &nbsp;|&nbsp; 20-Year
+          Horizon
+        </p>
+        <p class="footer-formula">
+          NPV = <span>Σ</span> CashFlow<sub>t</sub> / (1 + i)<sup>t</sup>
+        </p>
+      </footer>
+    </div>
+
+    <!-- ══════════════════════════════════════
+     VANILLA JS ES6+ ENGINE
+══════════════════════════════════════ -->
+    <script>
+      "use strict";
+
+      // Singleton chart instance
+      let chartInstance = null;
+
+      /* ── Sync slider label ── */
+      function syncRange(el, valId) {
+        document.getElementById(valId).textContent =
+          parseFloat(el.value).toFixed(1) + "%";
+      }
+
+      /* ── Read all inputs ── */
+      function readParams() {
+        return {
+          initialCost:
+            parseFloat(document.getElementById("initialCost").value) || 0,
+          annualSavings:
+            parseFloat(document.getElementById("annualSavings").value) || 0,
+          maintenanceCost:
+            parseFloat(document.getElementById("maintenanceCost").value) || 0,
+          discountRate:
+            parseFloat(document.getElementById("discountRate").value) / 100,
+          utilityInflation:
+            parseFloat(document.getElementById("utilityInflation").value) / 100,
+          degradationRate:
+            parseFloat(document.getElementById("degradationRate").value) / 100,
+          carbonIntensity:
+            parseFloat(document.getElementById("carbonIntensity").value) ||
+            0.45,
+          energyRate:
+            parseFloat(document.getElementById("energyRate").value) || 0.12,
+        };
+      }
+
+      /* ── Validate inputs; returns true if safe to proceed ── */
+      function validateInputs(p) {
+        let ok = true;
+
+        const rules = [
+          {
+            id: "initialCost",
+            msgId: "initialCost-msg",
+            pass: p.initialCost > 0,
+            msg: "⚠ Must be greater than 0",
+            cls: "error",
+          },
+          {
+            id: "annualSavings",
+            msgId: "annualSavings-msg",
+            pass: p.annualSavings > 0,
+            msg: "⚠ Must be greater than 0",
+            cls: "error",
+          },
+          {
+            id: "carbonIntensity",
+            msgId: "carbonIntensity-msg",
+            pass: p.carbonIntensity > 0 && p.carbonIntensity <= 2,
+            msg: "⚠ Typical range: 0.1–1.0 kg/kWh",
+            cls: "warn",
+          },
+        ];
+
+        rules.forEach((r) => {
+          const el = document.getElementById(r.id);
+          const msg = document.getElementById(r.msgId);
+          if (!r.pass) {
+            el.classList.add(r.cls);
+            if (msg) {
+              msg.textContent = r.msg;
+              msg.className = `field-msg ${r.cls} visible`;
+            }
+            if (r.cls === "error") ok = false;
+          } else {
+            el.classList.remove("warn", "error");
+            if (msg) {
+              msg.textContent = "";
+              msg.className = "field-msg";
+            }
+          }
+        });
+
+        return ok;
+      }
+
+      /* ══════════════════════════════════════
+     LCCA COMPUTATION ENGINE
+     NPV = Σ CashFlow_t / (1+i)^t
+     CashFlow_t = savings*(1+g)^t*(1-d)^t − maintenance
+  ══════════════════════════════════════ */
+      function computeLCCA(p) {
+        const YEARS = 20;
+        const rows = [];
+        let cumulNPV = -p.initialCost;
+        let cumulCO2 = 0; // kg
+        let breakEven = null;
+
+        for (let t = 1; t <= YEARS; t++) {
+          // Geometric gradient: inflation lifts savings, degradation erodes them
+          const grossSavings =
+            p.annualSavings *
+            Math.pow(1 + p.utilityInflation, t) *
+            Math.pow(1 - p.degradationRate, t);
+
+          const netCashFlow = grossSavings - p.maintenanceCost;
+          const discountedCF = netCashFlow / Math.pow(1 + p.discountRate, t);
+
+          cumulNPV += discountedCF;
+
+          // kWh saved → CO₂ avoided
+          const kwhSaved = grossSavings / p.energyRate;
+          const co2kg = kwhSaved * p.carbonIntensity;
+          cumulCO2 += co2kg;
+
+          if (breakEven === null && cumulNPV >= 0) breakEven = t;
+
+          rows.push({
+            year: t,
+            grossSavings,
+            maintenance: p.maintenanceCost,
+            netCashFlow,
+            discountedCF,
+            cumulNPV,
+            co2kg,
+            cumulCO2t: cumulCO2 / 1000,
+            isBreakEven: breakEven === t,
+          });
+        }
+
+        return {
+          rows,
+          finalNPV: cumulNPV,
+          breakEven,
+          totalCO2t: cumulCO2 / 1000,
+        };
+      }
+
+      /* ── Format helpers ── */
+      function fmtUSD(v) {
+        const a = Math.abs(v);
+        const sign = v < 0 ? "−" : "+";
+        if (a >= 1000000) return sign + "$" + (a / 1000000).toFixed(2) + "M";
+        if (a >= 1000) return sign + "$" + (a / 1000).toFixed(1) + "k";
+        return sign + "$" + a.toFixed(0);
+      }
+
+      function fmtN(v, d = 0) {
+        return v.toFixed(d).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+      }
+
+      /* ── Verdict logic ── */
+      function getVerdict(roi) {
+        if (roi >= 0.15) return { label: "Feasible", cls: "feasible" };
+        if (roi >= 0) return { label: "Marginal", cls: "marginal" };
+        return { label: "Not Recommended", cls: "not-recommended" };
+      }
+
+      /* ══════════════════════════════════════
+     RENDER CHART.JS DUAL-AXIS CHART
+  ══════════════════════════════════════ */
+      function renderChart(rows) {
+        const labels = rows.map((r) => "Y" + r.year);
+        const npvData = rows.map((r) => +r.cumulNPV.toFixed(2));
+        const co2Data = rows.map((r) => +(r.cumulCO2t * 1000).toFixed(1)); // back to kg
+
+        if (chartInstance) {
+          chartInstance.destroy();
+          chartInstance = null;
+        }
+
+        document.getElementById("chartEmpty").style.display = "none";
+        const canvas = document.getElementById("myChart");
+        canvas.style.display = "block";
+
+        const ctx = canvas.getContext("2d");
+        const grad = ctx.createLinearGradient(0, 0, 0, 300);
+        grad.addColorStop(0, "rgba(61,255,160,0.18)");
+        grad.addColorStop(1, "rgba(61,255,160,0.01)");
+
+        chartInstance = new Chart(ctx, {
+          data: {
+            labels,
+            datasets: [
+              {
+                type: "line",
+                label: "Cumulative NPV ($)",
+                data: npvData,
+                borderColor: "#3dffa0",
+                backgroundColor: grad,
+                borderWidth: 2,
+                pointRadius: 3,
+                pointBackgroundColor: "#3dffa0",
+                pointHoverRadius: 6,
+                fill: true,
+                tension: 0.35,
+                yAxisID: "yLeft",
+              },
+              {
+                type: "line",
+                label: "CO₂ Offset (kg)",
+                data: co2Data,
+                borderColor: "#ffc844",
+                backgroundColor: "transparent",
+                borderWidth: 1.5,
+                borderDash: [5, 4],
+                pointRadius: 2,
+                pointBackgroundColor: "#ffc844",
+                pointHoverRadius: 5,
+                fill: false,
+                tension: 0.35,
+                yAxisID: "yRight",
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            interaction: { mode: "index", intersect: false },
+            plugins: {
+              legend: { display: false },
+              tooltip: {
+                backgroundColor: "#0e1a16",
+                borderColor: "#243d35",
+                borderWidth: 1,
+                titleColor: "#3dffa0",
+                bodyColor: "#7aaa94",
+                padding: 12,
+                callbacks: {
+                  label: (ctx) =>
+                    ctx.datasetIndex === 0
+                      ? "  NPV: $" + fmtN(ctx.parsed.y, 0)
+                      : "  CO₂: " + fmtN(ctx.parsed.y, 0) + " kg",
+                },
+              },
+            },
+            scales: {
+              x: {
+                grid: { color: "rgba(255,255,255,0.04)" },
+                ticks: {
+                  color: "#3d6655",
+                  font: { family: "DM Mono", size: 10 },
+                  maxRotation: 0,
+                },
+              },
+              yLeft: {
+                position: "left",
+                grid: { color: "rgba(61,255,160,0.06)" },
+                ticks: {
+                  color: "#3dffa0",
+                  font: { family: "DM Mono", size: 10 },
+                  callback: (v) => "$" + (v / 1000).toFixed(0) + "k",
+                },
+              },
+              yRight: {
+                position: "right",
+                grid: { drawOnChartArea: false },
+                ticks: {
+                  color: "#ffc844",
+                  font: { family: "DM Mono", size: 10 },
+                  callback: (v) => fmtN(v, 0) + " kg",
+                },
+              },
+            },
+          },
+        });
+      }
+
+      /* ══════════════════════════════════════
+     RENDER DATA TABLE
+  ══════════════════════════════════════ */
+      function renderTable(rows) {
+        document.getElementById("tableBody").innerHTML = rows
+          .map((r) => {
+            const beClass = r.isBreakEven ? ' class="be-row"' : "";
+            const npvCls = r.cumulNPV >= 0 ? "pos" : "neg";
+            const cfCls = r.netCashFlow >= 0 ? "pos" : "neg";
+            const beTag = r.isBreakEven ? " ◀ BE" : "";
+
+            return `<tr${beClass}>
+        <td>${r.year}${beTag}</td>
+        <td>$${fmtN(r.grossSavings, 0)}</td>
+        <td>$${fmtN(r.maintenance, 0)}</td>
+        <td class="${cfCls}">$${fmtN(r.netCashFlow, 0)}</td>
+        <td>$${fmtN(r.discountedCF, 0)}</td>
+        <td class="${npvCls}">$${fmtN(r.cumulNPV, 0)}</td>
+        <td>${fmtN(r.co2kg, 0)}</td>
+        <td>${r.cumulCO2t.toFixed(2)}</td>
+      </tr>`;
+          })
+          .join("");
+      }
+
+      /* ══════════════════════════════════════
+     MAIN ENTRY POINT
+  ══════════════════════════════════════ */
+      function runAnalysis() {
+        const p = readParams();
+        if (!validateInputs(p)) return;
+
+        const { rows, finalNPV, breakEven, totalCO2t } = computeLCCA(p);
+
+        // ROI relative to initial investment
+        const roi = (finalNPV + p.initialCost) / p.initialCost - 1;
+        const verdict = getVerdict(roi);
+
+        // ── Update KPI cards ──
+        const npvEl = document.getElementById("kpiNPV");
+        npvEl.textContent = fmtUSD(finalNPV);
+        npvEl.className =
+          "kpi-value " + (finalNPV >= 0 ? "positive" : "negative");
+
+        const pbEl = document.getElementById("kpiPayback");
+        pbEl.textContent = breakEven ? "Year " + breakEven : "> 20 yrs";
+        pbEl.className = "kpi-value " + (breakEven ? "positive" : "negative");
+
+        const co2El = document.getElementById("kpiCarbon");
+        co2El.textContent = totalCO2t.toFixed(1) + " t";
+        co2El.className = "kpi-value positive";
+
+        document.getElementById("kpiVerdict").innerHTML =
+          `<div class="verdict-badge ${verdict.cls}">
+         <span class="verdict-dot"></span>${verdict.label}
+       </div>`;
+
+        // ── Break-even annotation ──
+        const beLabel = document.getElementById("breakevenLabel");
+        beLabel.style.display = "block";
+        document.getElementById("breakevenAnnot").textContent = breakEven
+          ? "Year " + breakEven
+          : "Not within 20 yrs";
+
+        renderChart(rows);
+        renderTable(rows);
+      }
+
+      // Auto-run on page load with defaults
+      document.addEventListener("DOMContentLoaded", runAnalysis);
+    </script>
+  </body>
+</html>
